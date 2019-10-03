@@ -1,0 +1,17 @@
+Package: hybrid
+Title: What the Package Does (One Line, Title Case)
+Version: 0.0.0.9000
+Authors@R: 
+    person("Romain", "François", role = c("aut", "cre"),
+           email = "romain@rstudio.com",
+           comment = c(ORCID = "0000-0002-2444-4226"))
+Author: Romain François
+Description: What the package does (one paragraph).
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Imports: 
+    vctrs,
+    rlang,
+    purrr
+RoxygenNote: 6.1.1
