@@ -1,24 +1,30 @@
-hybrid_plus <- function(x, y) {
-  UseMethod("hybrid_plus", y)
-}
-hybrid_plus.default <- function(x, y) {
-  attr(x, "ptype") + vec_ptype(y)
+#' @rdname hybrid
+#' @export vec_arith.hybrid
+#' @method vec_arith hybrid
+#' @export
+vec_arith.hybrid <- function(op, x, y, ...) UseMethod("vec_arith.hybrid", y)
+
+#' @export
+vec_arith.hybrid.default <- function(op, x, y) {
+  vec_arith(op, attr(x, "ptype"), y)
 }
 
-hybrid_plus.hybrid <- function(x, y) {
+#' @export
+vec_arith.hybrid.hybrid <- function(op, x, y) {
   hybrid_tree(
-    ptype = attr(x, "ptype") + attr(y, "ptype"),
-    fun = "+",
+    ptype = vec_arith(op, attr(x, "ptype"), attr(y, "ptype")),
+    fun = op,
     args = list(x = x, y = y),
     class = c("hybrid_plus")
   )
 }
 
 #' @export
-`+.hybrid` = function(x, y) {
-  if(!inherits(y, "hybrid")) {
-    vec_ptype(attr(x, "ptype")) + vec_ptype(y)
-  } else {
-    hybrid_plus(x, y)
-  }
+vec_arith.Date.hybrid <- function(op, x, y) {
+  vec_arith(op, x, attr(y, "ptype"))
+}
+
+#' @export
+vec_arith.factor.hybrid <- function(op, x, y) {
+  vec_arith(op, x, attr(y, "ptype"))
 }

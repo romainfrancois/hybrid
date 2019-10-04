@@ -1,5 +1,5 @@
 
-# wrap the data as an hybrid leaf, i.e. a column of a data frame
+#' @export
 hybrid_leaf <- function(x) {
   ptype <- vec_ptype(x)
   structure(
@@ -9,6 +9,7 @@ hybrid_leaf <- function(x) {
   )
 }
 
+#' @export
 hybrid_tree <- function(ptype, fun, args, class) {
   structure(
     ptype,
@@ -21,5 +22,11 @@ hybrid_tree <- function(ptype, fun, args, class) {
 
 #' @export
 eval_hybrid <- function(data, expr) {
-  eval_tidy(enquo(expr), data = map(data, hybrid_leaf))
+  top <- env(!!!map(data, hybrid_leaf))
+  bottom <- env("+" = function(e1, e2) vec_arith("+", e1, e2), top)
+
+  eval_tidy(
+    enquo(expr),
+    data = new_data_mask(bottom, top)
+  )
 }
