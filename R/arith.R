@@ -15,7 +15,7 @@ vec_arith.hybrid.hybrid <- function(op, x, y) {
     ptype = vec_arith(op, attr(x, "ptype"), attr(y, "ptype")),
     fun = op,
     args = list(x = x, y = y),
-    class = c("hybrid_plus")
+    class = c(paste0("hybrid_arith_", op), "hybrid_arith")
   )
 }
 
