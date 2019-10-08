@@ -1,6 +1,5 @@
 hybrid_vec_arith <- function(op, x, y) {
   hybrid_tree(
-    ptype = vec_arith(op, hybrid_ptype(x), hybrid_ptype(y)),
     fun = op,
     args = list(x = x, y = y),
     class = c(paste0("hybrid_arith_", op), "hybrid_arith")

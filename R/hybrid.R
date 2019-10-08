@@ -1,29 +1,37 @@
 
 #' @export
-hybrid_leaf <- function(x) {
-  ptype <- vec_ptype(x)
+hybrid_leaf <- function(x, name) {
   structure(
-    ptype,
+    list(),
     class = c("hybrid_leaf", "hybrid"),
-    ptype = ptype
+    ptype = vec_ptype(x),
+    name = name
   )
 }
 
 #' @export
-hybrid_tree <- function(ptype, fun, args, class) {
+hybrid_tree <- function(fun, args, class) {
   structure(
-    ptype,
+    list(),
     fun = fun,
     args = args,
-    class = c(class, "hybrid_tree", "hybrid"),
-    ptype = ptype
+    class = c(class, "hybrid_tree", "hybrid")
   )
+}
+
+is_hybridable <- function(x) {
+  inherits(x, "hybrid") || rlang::is_syntactic_literal(x)
+}
+
+hybridable <- function(x) {
+  stopifnot(is_hybridable(x))
+  x
 }
 
 #' @export
 eval_hybrid <- function(data, expr) {
-  top <- env(!!!map(data, hybrid_leaf))
-  bottom <- env(
+  mask <- map2(data, names(data), hybrid_leaf)
+  funs <- env(
     # arith
     "+"   = function(e1, e2) vec_arith("+", e1, e2),
     "-"   = function(e1, e2) vec_arith("-", e1, e2),
@@ -44,26 +52,22 @@ eval_hybrid <- function(data, expr) {
     "<"  = function(x, y) hybrid_compare("<" , x, y),
     ">"  = function(x, y) hybrid_compare(">" , x, y),
 
-    top
+
+    mean = mean,
+    sum = sum,
+    var = var,
+
+    "%in%" = function(x, table) {
+      hybrid_tree("%in%",
+        args = list(x = hybridable(x), table = hybridable(table)),
+        class = "hybrid_%in%"
+      )
+    },
+
+    empty_env()
   )
 
-  eval_tidy(
-    enquo(expr),
-    data = new_data_mask(bottom, top)
-  )
-}
+  quo <- quo_set_env(enquo(expr), funs)
 
-#' @export
-hybrid_ptype <- function(x) {
-  UseMethod("hybrid_ptype")
-}
-
-#' @export
-hybrid_ptype.default <- function(x) {
-  vec_ptype(x)
-}
-
-#' @export
-hybrid_ptype.hybrid <- function(x) {
-  attr(x, "ptype")
+  tryCatch(eval_tidy(quo, data = mask), condition = function(e) NULL)
 }
