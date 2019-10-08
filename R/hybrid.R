@@ -31,43 +31,8 @@ hybridable <- function(x) {
 #' @export
 eval_hybrid <- function(data, expr) {
   mask <- map2(data, names(data), hybrid_leaf)
-  funs <- env(
-    # arith
-    "+"   = function(e1, e2) vec_arith("+", e1, e2),
-    "-"   = function(e1, e2) vec_arith("-", e1, e2),
-    "*"   = function(e1, e2) vec_arith("*", e1, e2),
-    "/"   = function(e1, e2) vec_arith("/", e1, e2),
-    "^"   = function(e1, e2) vec_arith("^", e1, e2),
-    "%%"  = function(e1, e2) vec_arith("%%", e1, e2),
-    "%/%" = function(e1, e2) vec_arith("%/%", e1, e2),
-    "&"   = function(e1, e2) vec_arith("&", e1, e2),
-    "|"   = function(e1, e2) vec_arith("|", e1, e2),
-    "!"   = function(x) vec_arith("!", x, MISSING()),
 
-    # compare
-    "==" = function(x, y) hybrid_compare("==", x, y),
-    "<=" = function(x, y) hybrid_compare("<=", x, y),
-    ">=" = function(x, y) hybrid_compare(">=", x, y),
-    "!=" = function(x, y) hybrid_compare("!=", x, y),
-    "<"  = function(x, y) hybrid_compare("<" , x, y),
-    ">"  = function(x, y) hybrid_compare(">" , x, y),
-
-
-    mean = mean,
-    sum = sum,
-    var = var,
-
-    "%in%" = function(x, table) {
-      hybrid_tree("%in%",
-        args = list(x = hybridable(x), table = hybridable(table)),
-        class = "hybrid_%in%"
-      )
-    },
-
-    empty_env()
-  )
-
-  quo <- quo_set_env(enquo(expr), funs)
+  quo <- quo_set_env(enquo(expr), hybrid_functions)
 
   tryCatch(eval_tidy(quo, data = mask), condition = function(e) NULL)
 }
